@@ -1,0 +1,30 @@
+{
+  "name": "booking-events-graphql",
+  "version": "1.0.0",
+  "description": "React + GraphQL booking events app",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elian-cheng/booking-events-graphql.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/elian-cheng/booking-events-graphql/issues"
+  },
+  "homepage": "https://github.com/elian-cheng/booking-events-graphql#readme",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "express": "^4.18.2",
+    "express-graphql": "^0.12.0",
+    "graphql": "^16.6.0",
+    "mongoose": "^7.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
