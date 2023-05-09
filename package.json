@@ -23,6 +23,7 @@
     "express": "latest",
     "express-graphql": "latest",
     "graphql": "latest",
+    "jsonwebtoken": "^9.0.0",
     "mongoose": "latest"
   },
   "devDependencies": {
