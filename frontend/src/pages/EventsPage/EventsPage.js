@@ -3,15 +3,20 @@ import Modal from "../../components/Modal/Modal";
 import Backdrop from "../../components/Backdrop/Backdrop";
 import "./EventsPage.css";
 import authContext from "../../context/authContext";
+import EventList from "./components/EventList/EventList";
+import Spinner from "../../components/Spinner/Spinner";
 
 const EventsPage = () => {
   const [creating, setCreating] = useState(false);
   const [events, setEvents] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const titleElRef = useRef();
   const priceElRef = useRef();
   const dateElRef = useRef();
   const descriptionElRef = useRef();
   const authCtx = useContext(authContext);
+  const token = authCtx.token;
 
   useEffect(() => {
     fetchEvents();
@@ -58,8 +63,6 @@ const EventsPage = () => {
         `
     };
 
-    const token = authCtx.token;
-
     fetch("http://localhost:5000/graphql", {
       method: "POST",
       body: JSON.stringify(requestBody),
@@ -75,7 +78,19 @@ const EventsPage = () => {
         return res.json();
       })
       .then(resData => {
-        fetchEvents();
+        setEvents(prevEvents => [
+          ...prevEvents,
+          {
+            _id: resData.data.createEvent._id,
+            title: resData.data.createEvent.title,
+            description: resData.data.createEvent.description,
+            date: resData.data.createEvent.date,
+            price: resData.data.createEvent.price,
+            creator: {
+              _id: authCtx.userId
+            }
+          }
+        ]);
       })
       .catch(err => {
         console.log(err);
@@ -84,9 +99,11 @@ const EventsPage = () => {
 
   const modalCancelHandler = () => {
     setCreating(false);
+    setSelectedEvent(null);
   };
 
   const fetchEvents = () => {
+    setIsLoading(true);
     const requestBody = {
       query: `
           query {
@@ -119,34 +136,36 @@ const EventsPage = () => {
         return res.json();
       })
       .then(resData => {
-        const events = resData.data.events;
-        setEvents(events);
+        const eventsData = resData.data.events;
+        setEvents(eventsData);
+        setIsLoading(false);
       })
       .catch(err => {
         console.log(err);
+        setIsLoading(false);
       });
   };
 
-  const eventList = events.map(event => {
-    return (
-      <li
-        key={event._id}
-        className="events__list-item">
-        {event.title}
-      </li>
-    );
-  });
+  const showDetailsHandler = eventId => {
+    const selectedEvent = events.find(event => event._id === eventId);
+    setSelectedEvent(selectedEvent);
+  };
+
+  const bookEventHandler = () => {
+    // Handle book event
+  };
 
   return (
     <>
-      {creating && <Backdrop />}
+      {(creating || selectedEvent) && <Backdrop />}
       {creating && (
         <Modal
           title="Add Event"
           canCancel
           canConfirm
           onCancel={modalCancelHandler}
-          onConfirm={modalConfirmHandler}>
+          onConfirm={modalConfirmHandler}
+          confirmText="Confirm">
           <form>
             <div className="form-control">
               <label htmlFor="title">Title</label>
@@ -183,7 +202,22 @@ const EventsPage = () => {
           </form>
         </Modal>
       )}
-      {authCtx.token && (
+      {selectedEvent && (
+        <Modal
+          title={selectedEvent.title}
+          canCancel
+          canConfirm
+          onCancel={modalCancelHandler}
+          onConfirm={bookEventHandler}
+          confirmText="Book">
+          <h1>{selectedEvent.title}</h1>
+          <h2>
+            ${selectedEvent.price} - {new Date(selectedEvent.date).toLocaleDateString()}
+          </h2>
+          <p>{selectedEvent.description}</p>
+        </Modal>
+      )}
+      {token && (
         <div className="events-control">
           <p>Share your own Events!</p>
           <button
@@ -193,7 +227,14 @@ const EventsPage = () => {
           </button>
         </div>
       )}
-      <ul className="events__list">{eventList}</ul>
+      {isLoading ? (
+        <Spinner />
+      ) : (
+        <EventList
+          events={events}
+          onViewDetail={showDetailsHandler}
+        />
+      )}
     </>
   );
 };
