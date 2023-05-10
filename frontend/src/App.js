@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import AuthPage from "./pages/AuthPage/AuthPage";
-import BookingsPage from "./pages/Bookings";
-import EventsPage from "./pages/Events";
+import BookingsPage from "./pages/BookingsPage/BookingsPage";
+import EventsPage from "./pages/EventsPage/EventsPage";
 import Navigation from "./components/Navigation/Navigation";
 import AuthContext from "./context/authContext";
 
@@ -33,12 +33,6 @@ function App() {
         <Navigation />
         <main className="main-content">
           <Routes>
-            {!token && (
-              <Route
-                path="/"
-                element={<Navigate to="/auth" />}
-              />
-            )}
             {token && (
               <Route
                 path="/"
@@ -51,7 +45,6 @@ function App() {
                 element={<Navigate to="/events" />}
               />
             )}
-
             {!token && (
               <Route
                 path="/auth"
@@ -66,6 +59,12 @@ function App() {
               <Route
                 path="/bookings"
                 element={<BookingsPage />}
+              />
+            )}
+            {!token && (
+              <Route
+                path="*"
+                element={<Navigate to="/auth" />}
               />
             )}
           </Routes>

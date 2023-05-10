@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
 
 class BookingsPage extends Component {
   render() {
@@ -7,3 +7,4 @@ class BookingsPage extends Component {
 }
 
 export default BookingsPage;
+

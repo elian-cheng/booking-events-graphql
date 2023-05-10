@@ -23,9 +23,14 @@ const Navigation = props => {
             <NavLink to="/events">Events</NavLink>
           </li>
           {authCtx.token && (
-            <li>
-              <NavLink to="/bookings">Bookings</NavLink>
-            </li>
+            <>
+              <li>
+                <NavLink to="/bookings">Bookings</NavLink>
+              </li>
+              <li>
+                <button onClick={authCtx.logout}>Logout</button>
+              </li>
+            </>
           )}
         </ul>
       </nav>
