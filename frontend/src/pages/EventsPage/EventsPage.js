@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
 import Modal from "../../components/Modal/Modal";
 import Backdrop from "../../components/Backdrop/Backdrop";
 import "./EventsPage.css";
@@ -10,6 +10,7 @@ const EventsPage = () => {
   const [creating, setCreating] = useState(false);
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isActive, setIsActive] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const titleElRef = useRef();
   const priceElRef = useRef();
@@ -17,10 +18,6 @@ const EventsPage = () => {
   const descriptionElRef = useRef();
   const authCtx = useContext(authContext);
   const token = authCtx.token;
-
-  useEffect(() => {
-    fetchEvents();
-  }, []);
 
   const startCreateEventHandler = () => {
     setCreating(true);
@@ -102,7 +99,7 @@ const EventsPage = () => {
     setSelectedEvent(null);
   };
 
-  const fetchEvents = () => {
+  const fetchEvents = useCallback(() => {
     setIsLoading(true);
     const requestBody = {
       query: `
@@ -137,14 +134,18 @@ const EventsPage = () => {
       })
       .then(resData => {
         const eventsData = resData.data.events;
-        setEvents(eventsData);
-        setIsLoading(false);
+        if (isActive) {
+          setEvents(eventsData);
+          setIsLoading(false);
+        }
       })
       .catch(err => {
         console.log(err);
-        setIsLoading(false);
+        if (isActive) {
+          setIsLoading(false);
+        }
       });
-  };
+  }, [isActive]);
 
   const showDetailsHandler = eventId => {
     const selectedEvent = events.find(event => event._id === eventId);
@@ -152,8 +153,51 @@ const EventsPage = () => {
   };
 
   const bookEventHandler = () => {
-    // Handle book event
+    if (!token) {
+      setSelectedEvent(null);
+      return;
+    }
+    const requestBody = {
+      query: `
+          mutation {
+            bookEvent(eventId: "${selectedEvent._id}") {
+              _id
+             createdAt
+             updatedAt
+            }
+          }
+        `
+    };
+
+    fetch("http://localhost:5000/graphql", {
+      method: "POST",
+      body: JSON.stringify(requestBody),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token
+      }
+    })
+      .then(res => {
+        if (res.status !== 200 && res.status !== 201) {
+          throw new Error("Failed!");
+        }
+        return res.json();
+      })
+      .then(resData => {
+        console.log(resData);
+        setSelectedEvent(null);
+      })
+      .catch(err => {
+        console.log(err);
+      });
   };
+
+  useEffect(() => {
+    fetchEvents();
+    return () => {
+      setIsActive(false);
+    };
+  }, [fetchEvents]);
 
   return (
     <>
@@ -209,7 +253,7 @@ const EventsPage = () => {
           canConfirm
           onCancel={modalCancelHandler}
           onConfirm={bookEventHandler}
-          confirmText="Book">
+          confirmText={token ? "Book" : "Confirm"}>
           <h1>{selectedEvent.title}</h1>
           <h2>
             ${selectedEvent.price} - {new Date(selectedEvent.date).toLocaleDateString()}
