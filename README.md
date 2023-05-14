@@ -1,11 +1,7 @@
-# booking-events-graphql
-
-React + GraphQL booking events app
-
 ## Booking Events GraphQL
 
 React + GraphQL booking events app, backend - Node Express.
-Implemented create events and book events functionality, user authentication using JWT, MongoDB.
+Implemented creating events and booking events functionality, user authentication using JWT, MongoDB.
 
 ## Install instructions:
 
@@ -36,3 +32,4 @@ Implemented create events and book events functionality, user authentication usi
 - MongoDB
 - Mongoose
 - JWT Authentication
+- Chart.js
